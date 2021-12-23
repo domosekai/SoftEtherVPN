@@ -444,6 +444,7 @@ CERT_KEY_PARAMETER		Параметры
 # Concerning certificate confirmation dialogs
 CC_DANGEROUS_MSG		Сертификат сервера, который был сохранен при предыдущем VPN-подключении к этому серверу (%S), не соответствует текущему сертификату, предоставленному сервером. \r\n\r\nЗначение предыдущего отпечатка (MD5): %S\r\nЗначение предыдущего отпечатка (SHA1): %S\r\n\r\nЗначение текущего отпечатка (MD5): %S\r\nЗначение текущего отпечатка (SHA1): %S\r\n\r\nВозможно, администратор сервера изменил сертификат на стороне VPN-сервера. Однако также возможна атака типа «человек посередине», такая как спуфинг. \r\nНастоятельно рекомендуется запросить разъяснения у администратора VPN-сервера, к которому вы хотите подключиться.
 CC_WARNING_MSG			Вы хотите доверять сертификату VPN-сервера, к которому подключены, при последующих подключениях к %s?\r\n\r\nЗначение отпечатка (SHA1): %S\r\nЗначение отпечатка (MD5): %S\r\n\r\nЕсли есть сомнения относительно подлинности сертификата этого сервера, свяжитесь с владельцем сервера с помощью надежного и безопасного метода и сравните приведенные выше значения отпечатков. \r\n\r\nНажмите «Да», чтобы автоматически доверять этому сертификату при следующем подключении к серверу, если он предоставит тот же сертификат. \r\nНажмите «Нет», чтобы доверять сертификату только в течении текущей сессии, и снова отобразить предупреждение при следующем подключении к этому серверу. \r\nНажмите «Отмена», чтобы вернуться в окно «Предупреждения безопасности». \r\n\r\nПримечание:  Этот параметр может быть изменен для каждого отдельного подключения. Вы можете сделать это в свойствах подключения VPN клиента.
+CC_DANGEROUS_MSG2		The public key of the host does not match the previous record. \r\n\r\nIf it wasn't changed by you, there might be an ongoing man-in-the-middle attack. Do not proceed if you are not sure.
 
 
 # Errors about Windows Versions
@@ -4517,6 +4518,24 @@ CMD_VPNCMD_PWPROMPT_2	Confirm input:
 CMD_VPNCMD_PWPROMPT_3	The password and the password confirmation do not match. Please input the password and confirmation again.
 CMD_VPNCMD_CLIENT_CONNECTED	Connected to VPN Client "%S".
 CMD_VPNCMD_TOOLS_CONNECTED	VPN Tools has been launched. By inputting HELP, you can view a list of the commands that can be used.
+CMD_VPNCMD_CONNECT_CONFIRM_1	This is the first time you connect to the host. Please confirm its identity.
+CMD_VPNCMD_CONNECT_CONFIRM_2	*** WARNING!! *** The public key of the host does not match the previous record. \n\nIf it wasn't changed by you, there might be an ongoing man-in-the-middle attack. Do not proceed if you are not sure.
+CMD_VPNCMD_CONNECT_CONFIRM_3	Do you confirm the identity of the server and want to continue to login? (Enter 'yes' to continue) 
+CMD_VPNCMD_CONNECT_CONFIRM_4	Invalid certificate or public key.
+CMD_VPNCMD_CONNECT_CONFIRM_5	Saved the public key to the list of known hosts.
+CMD_VPNCMD_CONNECT_CONFIRM_6	Failed to save the public key.
+CMD_VPNCMD_CONNECT_CONFIRM_7	Are you REALLY SURE you understand the warning and want to continue? (Enter 'yes' to continue) 
+CMD_VPNCMD_CONNECT_HOST_INFO_1	Hostname
+CMD_VPNCMD_CONNECT_HOST_INFO_2	Port
+CMD_VPNCMD_CONNECT_HOST_INFO_3	Product
+CMD_VPNCMD_CONNECT_HOST_INFO_4	Version
+CMD_VPNCMD_CONNECT_HOST_INFO_5	Build
+CMD_VPNCMD_CONNECT_HOST_INFO_6	Subject name
+CMD_VPNCMD_CONNECT_HOST_INFO_7	Issuer
+CMD_VPNCMD_CONNECT_HOST_INFO_8	Issued on
+CMD_VPNCMD_CONNECT_HOST_INFO_9	Expiration
+CMD_VPNCMD_CONNECT_HOST_INFO_10	Digest (MD5)
+CMD_VPNCMD_CONNECT_HOST_INFO_11	Digest (SHA-1)
 
 
 #######################################################
