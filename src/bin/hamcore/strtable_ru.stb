@@ -4141,6 +4141,7 @@ R_ENABLE				Включить VPN Azure
 R_DISABLE				Отключить VPN Azure
 S_HOSTNAME_BORDER		Текущее имя хоста VPN Azure
 S_HOSTNAME_INFO			Имя хоста VPN Azure совпадает с именем динамического DNS, но суффикс домена изменяется на "vpnazure.net".
+S_HOSTNAME_CUSTOM		Custom VPN Azure service is enabled. The VPN Azure hostname can only be changed from the vpncmd command.
 B_CHANGE				Изменить имя хоста
 B_WEB					Как использовать VPN Azure\r\n(Посетить сайт)
 IDCANCEL				&OK

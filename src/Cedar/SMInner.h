@@ -378,6 +378,7 @@ typedef struct SM_AZURE
 {
 	SM_SERVER *s;
 	bool OnSetup;
+	bool UseCustom;
 } SM_AZURE;
 
 
