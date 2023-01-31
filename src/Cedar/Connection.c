@@ -1243,7 +1243,6 @@ void ConnectionSend(CONNECTION *c, UINT64 now)
 							}
 							else
 							{
-								Debug("before write sendfifo size=%d\n", tss->SendFifo->size);
 								// TCP/IP socket
 								bool update_keepalive_timer = false;
 								// Number of data
