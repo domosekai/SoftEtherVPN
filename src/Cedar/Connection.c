@@ -2833,7 +2833,7 @@ TCPSOCK *NewTcpSock(SOCK *s)
 	AddRef(s->ref);
 
 	ts->RecvFifo = NewFifo();
-	ts->SendFifo = NewFifo();
+	ts->SendFifo = NewFifoEx2(true, true, MAX_SEND_SOCKET_QUEUE_SIZE);
 	ts->EstablishedTick = ts->LastRecvTime = ts->LastCommTime = Tick64();
 
 	// Unset the time-out value

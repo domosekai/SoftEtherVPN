@@ -2212,12 +2212,9 @@ UINT ReadFifo(FIFO *f, void *p, UINT size)
 
 	f->total_read_size += (UINT64)read_size;
 
-	if (f->fixed == false)
+	if (f->size == 0)
 	{
-		if (f->size == 0)
-		{
-			f->pos = 0;
-		}
+		f->pos = 0;
 	}
 
 	ShrinkFifoMemory(f);
@@ -2273,10 +2270,25 @@ void WriteFifo(FIFO *f, void *p, UINT size)
 		return;
 	}
 
+	if (f->fixed && f->size + size > f->memsize)
+	{
+		Debug("dropped!\n");
+		return;
+	}
+
 	i = f->size;
 	f->size += size;
 	need_size = f->pos + f->size;
 	realloc_flag = false;
+
+	// Move existing data because we can't realloc a fixed FIFO
+	if (f->fixed && need_size > f->memsize)
+	{
+		Move(f->p, (UCHAR *)f->p + f->pos, i);
+		f->pos = 0;
+		need_size = f->size;
+	}
+
 	// Memory expansion
 	while (need_size > f->memsize)
 	{
@@ -2380,9 +2392,9 @@ FIFO *NewFifoFast()
 }
 FIFO *NewFifoEx(bool fast)
 {
-	return NewFifoEx2(fast, false);
+	return NewFifoEx2(fast, false, 0);
 }
-FIFO *NewFifoEx2(bool fast, bool fixed)
+FIFO *NewFifoEx2(bool fast, bool fixed, UINT size)
 {
 	FIFO *f;
 
@@ -2401,9 +2413,17 @@ FIFO *NewFifoEx2(bool fast, bool fixed)
 	}
 
 	f->size = f->pos = 0;
-	f->memsize = FIFO_INIT_MEM_SIZE;
-	f->p = Malloc(FIFO_INIT_MEM_SIZE);
-	f->fixed = false;
+	if (size > 0)
+	{
+		f->memsize = size;
+		f->p = Malloc(size);
+	}
+	else
+	{
+		f->memsize = FIFO_INIT_MEM_SIZE;
+		f->p = Malloc(FIFO_INIT_MEM_SIZE);
+	}
+	f->fixed = fixed;
 
 	// KS
 	KS_INC(KS_NEWFIFO_COUNT);

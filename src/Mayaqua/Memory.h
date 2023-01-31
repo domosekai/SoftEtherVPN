@@ -259,7 +259,7 @@ void CleanupFifo(FIFO *f);
 FIFO *NewFifo();
 FIFO *NewFifoFast();
 FIFO *NewFifoEx(bool fast);
-FIFO *NewFifoEx2(bool fast, bool fixed);
+FIFO *NewFifoEx2(bool fast, bool fixed, UINT size);
 void InitFifo();
 void SetFifoCurrentReallocMemSize(UINT size);
 
