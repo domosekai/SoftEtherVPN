@@ -2832,7 +2832,7 @@ TCPSOCK *NewTcpSock(SOCK *s)
 	ts->Sock = s;
 	AddRef(s->ref);
 
-	ts->RecvFifo = NewFifo();
+	ts->RecvFifo = NewFifoEx2(true, true, MAX_SEND_SOCKET_QUEUE_SIZE);
 	ts->SendFifo = NewFifoEx2(true, true, MAX_SEND_SOCKET_QUEUE_SIZE);
 	ts->EstablishedTick = ts->LastRecvTime = ts->LastCommTime = Tick64();
 
