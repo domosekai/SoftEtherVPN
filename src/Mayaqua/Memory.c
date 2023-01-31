@@ -2277,7 +2277,7 @@ void WriteFifo(FIFO *f, void *p, UINT size)
 	f->size += size;
 	need_size = f->pos + f->size;
 	realloc_flag = false;
-
+Debug("WriteFifo 1: size=%d memsize=%d need=%d\n", f->size, f->memsize, need_size);
 	// Memory expansion
 	while (need_size > f->memsize)
 	{
@@ -2288,6 +2288,7 @@ void WriteFifo(FIFO *f, void *p, UINT size)
 	if (realloc_flag)
 	{
 		f->p = ReAlloc(f->p, f->memsize);
+		Debug("reallocated!\n");
 	}
 
 	// Write the data
@@ -2295,6 +2296,7 @@ void WriteFifo(FIFO *f, void *p, UINT size)
 	{
 		Copy((UCHAR *)f->p + f->pos + i, p, size);
 	}
+Debug("WriteFifo 2: size=%d memsize=%d need=%d\n", f->size, f->memsize, need_size);
 
 	f->total_write_size += (UINT64)size;
 
