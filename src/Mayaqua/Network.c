@@ -11930,6 +11930,8 @@ bool StartSSLEx3(SOCK *sock, X *x, K *priv, LIST *chain, UINT ssl_timeout, char 
 		}
 	#endif
 
+	ERR_clear_error();
+
 	if (sock->ServerMode)
 	{
 //		Lock(ssl_connect_lock);
