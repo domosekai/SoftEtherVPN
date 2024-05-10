@@ -1976,6 +1976,14 @@ RECV_START:
 					recv_buf_size = MIN(recv_buf_size, RECV_BUF_SIZE);
 
 					size = TcpSockRecv(s, ts, buf, recv_buf_size);
+Debug("ConnectionReceive: size=%d data=", size);
+if (size < SOCK_LATER) {
+for (UINT i = 0; i < size; i++) {
+        Debug("%02x", *(buf + i));
+    }
+}
+	Debug("\n");
+
 				}
 				else
 				{

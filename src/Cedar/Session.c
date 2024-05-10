@@ -507,11 +507,10 @@ Debug("SessionMain: after connectionReceive\n");
 		}
 
 		now = Tick64();
-Debug("SessionMain: before connectionSend\n");
 
 		// Send a block
 		ConnectionSend(c, now);
-Debug("SessionMain: after connectionSend\n");
+
 		// Determine the automatic disconnection
 		if (auto_disconnect_tick != 0 && auto_disconnect_tick <= now)
 		{

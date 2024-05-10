@@ -11931,6 +11931,8 @@ bool StartSSLEx3(SOCK *sock, X *x, K *priv, LIST *chain, UINT ssl_timeout, char 
 				while (err = ERR_get_error())
 				{
 					Debug("SSL_accept error %X: %s\n", err, ERR_reason_error_string(err));
+Debug("StartSSLEx3 server: sslerror=%d ssl=%p\n", err, sock->ssl);
+
 					if (ERR_GET_LIB(err) == ERR_LIB_SSL)
 					{
 						switch (ERR_GET_REASON(err))
@@ -11950,6 +11952,7 @@ bool StartSSLEx3(SOCK *sock, X *x, K *priv, LIST *chain, UINT ssl_timeout, char 
 						}
 					}
 				}
+				ERR_clear_error();
 				SSL_free(sock->ssl);
 				sock->ssl = NULL;
 			}
@@ -11997,6 +12000,8 @@ bool StartSSLEx3(SOCK *sock, X *x, K *priv, LIST *chain, UINT ssl_timeout, char 
 				while (err = ERR_get_error())
 				{
 					Debug("SSL_connect error %X: %s\n", err, ERR_reason_error_string(err));
+					Debug("StartSSLEx3 client: sslerror=%d ssl=%p\n", err, sock->ssl);
+
 					if (ERR_GET_LIB(err) == ERR_LIB_SSL)
 					{
 						switch (ERR_GET_REASON(err))
@@ -12286,6 +12291,8 @@ UINT SecureRecv(SOCK *sock, void *data, UINT size)
 				return 0;
 			}
 			ret = SSL_peek(ssl, &c, sizeof(c));
+e = SSL_get_error(ssl, ret);
+Debug("SecureRecv 1: async=%d sslerror=%d ssl=%p\n", sock->AsyncMode, e, ssl);
 		}
 		Unlock(sock->ssl_lock);
 		if (ret == 0)
@@ -12299,6 +12306,7 @@ UINT SecureRecv(SOCK *sock, void *data, UINT size)
 		{
 			// An error has occurred
 			e = SSL_get_error(ssl, ret);
+			ERR_clear_error();
 			if (e == SSL_ERROR_WANT_READ || e == SSL_ERROR_WANT_WRITE || e == SSL_ERROR_SSL)
 			{
 				if (e == SSL_ERROR_SSL
@@ -12343,6 +12351,8 @@ UINT SecureRecv(SOCK *sock, void *data, UINT size)
 #endif // UNIX_SOLARIS
 
 		ret = SSL_read(ssl, data, size);
+e = SSL_get_error(ssl, ret);
+Debug("SecureRecv 2: async=%d sslerror=%d ssl=%p\n", sock->AsyncMode, e, ssl);
 
 // Stop the timeout thread
 #ifdef UNIX_SOLARIS
@@ -12360,6 +12370,7 @@ UINT SecureRecv(SOCK *sock, void *data, UINT size)
 		if (ret < 0)
 		{
 			e = SSL_get_error(ssl, ret);
+			ERR_clear_error();
 		}
 
 	}
@@ -12441,6 +12452,7 @@ UINT SecureSend(SOCK *sock, void *data, UINT size)
 		if (ret < 0)
 		{
 			e = SSL_get_error(ssl, ret);
+			ERR_clear_error();
 		}
 	}
 	Unlock(sock->ssl_lock);

@@ -3295,7 +3295,7 @@ bool ServerAccept(CONNECTION *c)
 		s->NumLoginIncrementTick = Tick64() + (UINT64)NUM_LOGIN_INCREMENT_INTERVAL;
 		SessionMain(s);
 
-
+Debug("ServerAccept: Session main closed\n");
 		// Discard the user list cache
 		DeleteAllUserListCache(hub->UserList);
 
@@ -3677,7 +3677,7 @@ bool ServerAccept(CONNECTION *c)
 			HttpServerSend(c->FirstSock, p);
 			FreePack(p);
 		}
-
+Debug("ServerAccept: admin closed err=%d\n", err);
 		error_detail = "admin_rpc";
 
 		goto CLEANUP;
