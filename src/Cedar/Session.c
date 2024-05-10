@@ -215,7 +215,7 @@ void SessionMain(SESSION *s)
 	lock_receive_blocks_queue = s->LinkModeServer;
 
 	now = Tick64();
-
+Debug("SessionMain: before loop\n");
 	while (true)
 	{
 		Zero(&t, sizeof(t));
@@ -280,10 +280,11 @@ void SessionMain(SESSION *s)
 				ClientAdditionalConnectChance(s);
 			}
 		}
+Debug("SessionMain: before connectionReceive\n");
 
 		// Receive a block
 		ConnectionReceive(c, s->Cancel1, s->Cancel2);
-
+Debug("SessionMain: after connectionReceive\n");
 		// Get the current time
 		now = Tick64();
 
@@ -506,10 +507,11 @@ void SessionMain(SESSION *s)
 		}
 
 		now = Tick64();
+Debug("SessionMain: before connectionSend\n");
 
 		// Send a block
 		ConnectionSend(c, now);
-
+Debug("SessionMain: after connectionSend\n");
 		// Determine the automatic disconnection
 		if (auto_disconnect_tick != 0 && auto_disconnect_tick <= now)
 		{
