@@ -11916,7 +11916,9 @@ bool StartSSLEx3(SOCK *sock, X *x, K *priv, LIST *chain, UINT ssl_timeout, char 
 	#if OPENSSL_VERSION_NUMBER >= 0x30000000L
 		SSL_set1_groups_list(sock->ssl, PQ_GROUP_LIST);
 	#endif
-	
+
+	ERR_clear_error();
+
 	if (sock->ServerMode)
 	{
 //		Lock(ssl_connect_lock);
