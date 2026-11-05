@@ -124,6 +124,12 @@ void AcWaitForRequest(AZURE_CLIENT *ac, SOCK *s, AZURE_PARAM *param)
 							else
 							{
 								BUF *b = StrToBin(ac->DDnsStatus.AzureCertHash);
+
+								// Initialize the expected hash so a missing or malformed
+								// AzureCertHash cannot make the certification check below
+								// compare against uninitialized memory
+								Zero(relay_cert_hash, sizeof(relay_cert_hash));
+
 								if (b->Size == SHA1_SIZE)
 								{
 									Copy(relay_cert_hash, b->Buf, SHA1_SIZE);
@@ -163,7 +169,10 @@ void AcWaitForRequest(AZURE_CLIENT *ac, SOCK *s, AZURE_PARAM *param)
 									Zero(server_cert_hash, sizeof(server_cert_hash));
 									GetXDigest(ns->RemoteX, server_cert_hash, true);
 
-									if (Cmp(relay_cert_hash, server_cert_hash, SHA1_SIZE) == 0)
+									// Fail closed: never treat two all-zero digests (missing
+									// expected hash and/or missing peer certificate) as a match
+									if (ns->RemoteX != NULL &&
+										Cmp(relay_cert_hash, server_cert_hash, SHA1_SIZE) == 0)
 									{
 										if (SendAll(ns, AZURE_PROTOCOL_DATA_SIANGTURE, 24, true))
 										{
@@ -580,29 +589,36 @@ void AcSetEnable(AZURE_CLIENT *ac, bool enabled, bool use_custom)
 		return;
 	}
 
-	if (ac->IsEnabled != enabled)
+	// Update the state under ac->Lock: the main thread reads UseCustom
+	// under the same lock before dereferencing CustomConfig
+	Lock(ac->Lock);
 	{
-		ac->IsEnabled = enabled;
-		changed = true;
-	}
+		if (ac->IsEnabled != enabled)
+		{
+			ac->IsEnabled = enabled;
+			changed = true;
+		}
 
-	if (ac->UseCustom != use_custom)
-	{
-		ac->UseCustom = use_custom;
-		changed = true;
-	}
+		if (ac->UseCustom != use_custom)
+		{
+			ac->UseCustom = use_custom;
+			changed = true;
+		}
 
-	if (ac->IsEnabled && ac->UseCustom == false && changed)
-	{
-		ac->DDnsTriggerInt++;
-	}
+		if (ac->IsEnabled && ac->UseCustom == false && changed)
+		{
+			ac->DDnsTriggerInt++;
+		}
 
-	if (ac->IsEnabled == false)
-	{
-		// If VPN Azure client is disabled, disconnect current data connection
-		changed = true;
+		if (ac->IsEnabled == false)
+		{
+			// If VPN Azure client is disabled, disconnect current data connection
+			changed = true;
+		}
 	}
+	Unlock(ac->Lock);
 
+	// AcApplyCurrentConfig() takes ac->Lock by itself
 	AcApplyCurrentConfig(ac, NULL, NULL, changed);
 }
 
