@@ -3298,32 +3298,45 @@ FOLDER *SiWriteConfigurationToCfg(SERVER *s)
 		}
 
 		FOLDER *azure_folder = CfgCreateFolder(root, "VPNAzureClient");
+		AZURE_CLIENT *ac = s->AzureClient;
 
-		if (s->AzureClient != NULL && s->AzureClient->CustomConfig != NULL)
+		if (ac != NULL)
 		{
-			CfgAddStr(azure_folder, "ServerName", s->AzureClient->CustomConfig->ServerName);
-			CfgAddInt(azure_folder, "ServerPort", s->AzureClient->CustomConfig->ServerPort);
-			CfgAddStr(azure_folder, "Hostname", s->AzureClient->CustomConfig->Hostname);
-			CfgAddByte(azure_folder, "HashedPassword", s->AzureClient->CustomConfig->HashedPassword, sizeof(s->AzureClient->CustomConfig->HashedPassword));
-			CfgAddBool(azure_folder, "VerifyServer", s->AzureClient->CustomConfig->VerifyServer);
-			CfgAddBool(azure_folder, "AddDefaultCA", s->AzureClient->CustomConfig->AddDefaultCA);
+			// AcApplyCurrentConfig() frees and replaces CustomConfig under
+			// ac->Lock, so the saver thread must take the same lock while
+			// reading it. Otherwise this can dereference a freed config.
+			Lock(ac->Lock);
+			{
+				AZURE_CUSTOM_CONFIG *config = ac->CustomConfig;
 
-			BUF *b;
+				if (config != NULL)
+				{
+					BUF *b;
 
-			// VPN Azure server certificate
-			b = XToBuf(s->AzureClient->CustomConfig->ServerCert, false);
-			CfgAddBuf(azure_folder, "ServerCert", b);
-			FreeBuf(b);
+					CfgAddStr(azure_folder, "ServerName", config->ServerName);
+					CfgAddInt(azure_folder, "ServerPort", config->ServerPort);
+					CfgAddStr(azure_folder, "Hostname", config->Hostname);
+					CfgAddByte(azure_folder, "HashedPassword", config->HashedPassword, sizeof(config->HashedPassword));
+					CfgAddBool(azure_folder, "VerifyServer", config->VerifyServer);
+					CfgAddBool(azure_folder, "AddDefaultCA", config->AddDefaultCA);
 
-			// VPN Azure client certificate
-			b = XToBuf(s->AzureClient->CustomConfig->ClientX, false);
-			CfgAddBuf(azure_folder, "ClientCert", b);
-			FreeBuf(b);
+					// VPN Azure server certificate
+					b = XToBuf(config->ServerCert, false);
+					CfgAddBuf(azure_folder, "ServerCert", b);
+					FreeBuf(b);
 
-			// VPN Azure client private key
-			b = KToBuf(s->AzureClient->CustomConfig->ClientK, false, NULL);
-			CfgAddBuf(azure_folder, "ClientKey", b);
-			FreeBuf(b);
+					// VPN Azure client certificate
+					b = XToBuf(config->ClientX, false);
+					CfgAddBuf(azure_folder, "ClientCert", b);
+					FreeBuf(b);
+
+					// VPN Azure client private key
+					b = KToBuf(config->ClientK, false, NULL);
+					CfgAddBuf(azure_folder, "ClientKey", b);
+					FreeBuf(b);
+				}
+			}
+			Unlock(ac->Lock);
 		}
 	}
 
