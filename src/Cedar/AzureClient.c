@@ -81,7 +81,7 @@ void AcWaitForRequest(AZURE_CLIENT *ac, SOCK *s, AZURE_PARAM *param)
 
 						if (client_port != 0 && server_port != 0)
 						{
-							SOCK *ns;
+							SOCK *ns = NULL;
 							Debug("Connect Request from %r:%u\n", &client_ip, client_port);
 							char ipstr[128];
 							IPToStr(ipstr, sizeof(ipstr), &client_ip);
@@ -711,19 +711,26 @@ void FreeAzureClient(AZURE_CLIENT *ac)
 		ReleaseSock(disconnect_sock);
 	}
 
-	if (ac->CustomConfig != NULL)
-	{
-		FreeX(ac->CustomConfig->ServerCert);
-		FreeX(ac->CustomConfig->ClientX);
-		FreeK(ac->CustomConfig->ClientK);
-		Free(ac->CustomConfig);
-	}
-
 	Set(ac->Event);
 
 	// Stop main thread
 	WaitThread(ac->MainThread, INFINITE);
 	ReleaseThread(ac->MainThread);
+
+	// Free the custom configuration only after the main thread has stopped.
+	// Otherwise the main thread may still be reading / cloning it.
+	Lock(ac->Lock);
+	{
+		if (ac->CustomConfig != NULL)
+		{
+			FreeX(ac->CustomConfig->ServerCert);
+			FreeX(ac->CustomConfig->ClientX);
+			FreeK(ac->CustomConfig->ClientK);
+			Free(ac->CustomConfig);
+			ac->CustomConfig = NULL;
+		}
+	}
+	Unlock(ac->Lock);
 
 	ReleaseEvent(ac->Event);
 
