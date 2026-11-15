@@ -2015,7 +2015,7 @@ void SiGenerateDefaultCertEx(X **server_x, K **server_k, char *common_name)
 	if (IsEmptyStr(common_name))
 	{
 		// Get the host name
-		StrCpy(tmp, sizeof(tmp), "server.softether.vpn");
+		StrCpy(tmp, sizeof(tmp), "localhost");
 		GetMachineName(tmp, sizeof(tmp));
 		StrToUni(cn, sizeof(cn), tmp);
 	}

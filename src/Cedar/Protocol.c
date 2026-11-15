@@ -5839,7 +5839,8 @@ bool ServerDownloadSignature(CONNECTION *c, char **error_detail_str)
 			if ((data_size > MAX_WATERMARK_SIZE || data_size < SizeOfWaterMark()) && (data_size != StrLen(HTTP_VPN_TARGET_POSTDATA)))
 			{
 				// Data is too large
-				HttpSendForbidden(s, h->Target, NULL);
+				// Disconnect silently to hide the identity of the server
+				Disconnect(s);
 				FreeHttpHeader(h);
 				c->Err = ERR_CLIENT_IS_NOT_VPN;
 				*error_detail_str = "POST_Recv_TooLong";
@@ -5859,9 +5860,13 @@ bool ServerDownloadSignature(CONNECTION *c, char **error_detail_str)
 			if ((StrCmpi(h->Target, vpn_http_target) != 0) || not_found_error)
 			{
 				// Target is invalid
-				HttpSendNotFound(s, h->Target);
+				// Disconnect silently to hide the identity of the server
+				Disconnect(s);
 				Free(data);
+				FreeHttpHeader(h);
+				c->Err = ERR_CLIENT_IS_NOT_VPN;
 				*error_detail_str = "POST_Target_Wrong";
+				return false;
 			}
 			else
 			{
@@ -5877,11 +5882,15 @@ bool ServerDownloadSignature(CONNECTION *c, char **error_detail_str)
 				else
 				{
 					// WaterMark is incorrect
-					HttpSendForbidden(s, h->Target, NULL);
+					// Disconnect silently to hide the identity of the server
+					Disconnect(s);
+					Free(data);
+					FreeHttpHeader(h);
+					c->Err = ERR_CLIENT_IS_NOT_VPN;
 					*error_detail_str = "POST_WaterMark_Error";
+					return false;
 				}
 			}
-			FreeHttpHeader(h);
 		}
 		else if (StrCmpi(h->Method, "OPTIONS") == 0)
 		{
@@ -5933,11 +5942,13 @@ bool ServerDownloadSignature(CONNECTION *c, char **error_detail_str)
 			else
 			{
 				// URI is invalid
-				HttpSendNotFound(s, h->Target);
+				// Disconnect silently to hide the identity of the server
+				Disconnect(s);
+				FreeHttpHeader(h);
+				c->Err = ERR_CLIENT_IS_NOT_VPN;
 				*error_detail_str = "SSTP_URL_WRONG";
+				return false;
 			}
-
-			FreeHttpHeader(h);
 		}
 		else
 		{
@@ -5946,8 +5957,12 @@ bool ServerDownloadSignature(CONNECTION *c, char **error_detail_str)
 				 && StrCmpi(h->Method, "POST") != 0)
 			{
 				// Unsupported method calls
-				HttpSendNotImplemented(s, h->Method, h->Target, h->Version);
+				// Disconnect silently to hide the identity of the server
+				Disconnect(s);
+				FreeHttpHeader(h);
+				c->Err = ERR_CLIENT_IS_NOT_VPN;
 				*error_detail_str = "HTTP_BAD_METHOD";
+				return false;
 			}
 			else
 			{
@@ -5976,7 +5991,11 @@ bool ServerDownloadSignature(CONNECTION *c, char **error_detail_str)
 					}
 					else
 					{
-						HttpSendForbidden(c->FirstSock, h->Target, "");
+						// Disconnect silently to hide the identity of the server
+						Disconnect(s);
+						FreeHttpHeader(h);
+						c->Err = ERR_CLIENT_IS_NOT_VPN;
+						return false;
 					}
 				}
 				else
@@ -6077,9 +6096,12 @@ bool ServerDownloadSignature(CONNECTION *c, char **error_detail_str)
 					if (b == false)
 					{
 						// Not Found
-						HttpSendNotFound(s, h->Target);
-
+						// Disconnect silently to hide the identity of the server
+						Disconnect(s);
+						FreeHttpHeader(h);
+						c->Err = ERR_CLIENT_IS_NOT_VPN;
 						*error_detail_str = "HTTP_NOT_FOUND";
+						return false;
 					}
 				}
 			}
