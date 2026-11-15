@@ -75,8 +75,5 @@ PACK *HttpClientRecv(SOCK *s);
 bool HttpServerSend(SOCK *s, PACK *p);
 PACK *HttpServerRecv(SOCK *s);
 PACK *HttpServerRecvEx(SOCK *s, UINT max_data_size);
-bool HttpSendForbidden(SOCK *s, char *target, char *server_id);
-bool HttpSendNotFound(SOCK *s, char *target);
-bool HttpSendNotImplemented(SOCK *s, char *method, char *target, char *version);
 
 #endif

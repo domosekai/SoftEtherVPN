@@ -70,10 +70,6 @@ struct ROUTE_CHANGE_DATA
 #define	FIX_SSL_BLOCKING
 #endif
 
-// HTTP constant
-static char http_detect_server_startwith[] = "<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">\r\n<HTML><HEAD>\r\n<TITLE>403 Forbidden</TITLE>\r\n</HEAD><BODY>\r\n<H1>Forbidden</H1>\r\nYou don't have permission to access ";
-static char http_detect_server_tag_future[] = "9C37197CA7C2428388C2E6E59B829B30";
-
 // Lock related
 static LOCK *machine_name_lock = NULL;
 static LOCK *disconnect_function_lock = NULL;
@@ -14040,120 +14036,6 @@ SOCKET BindConnectTimeoutIPv4(IP* localIP, UINT localport, IP* ip, UINT port, UI
 	}
 
 	return s;
-}
-
-// Identify whether the HTTPS server to be connected is a SoftEther VPN
-bool DetectIsServerSoftEtherVPN(SOCK *s)
-{
-	HTTP_HEADER *h;
-	char ip_str[MAX_SIZE];
-	char *send_str;
-	UINT content_len;
-	BUF *recv_buf;
-	void *socket_buffer;
-	UINT socket_buffer_size = 32768;
-	bool ok = false;
-	// Validate arguments
-	if (s == NULL)
-	{
-		return false;
-	}
-
-	IPToStr(ip_str, sizeof(ip_str), &s->RemoteIP);
-
-	// Request generation
-	h = NewHttpHeaderEx("GET", "/", "HTTP/1.1", true);
-	AddHttpValue(h, NewHttpValue("X-VPN", "1"));
-	AddHttpValue(h, NewHttpValue("Host", ip_str));
-	AddHttpValue(h, NewHttpValue("Keep-Alive", HTTP_KEEP_ALIVE));
-	AddHttpValue(h, NewHttpValue("Connection", "Keep-Alive"));
-	AddHttpValue(h, NewHttpValue("Accept-Language", "ja"));
-	AddHttpValue(h, NewHttpValue("User-Agent", DEFAULT_USER_AGENT));
-	AddHttpValue(h, NewHttpValue("Pragma", "no-cache"));
-	AddHttpValue(h, NewHttpValue("Cache-Control", "no-cache"));
-
-
-
-	send_str = HttpHeaderToStr(h);
-	FreeHttpHeader(h);
-
-	// Transmission
-	if (SendAll(s, send_str, StrLen(send_str), true) == false)
-	{
-		Free(send_str);
-		return false;
-	}
-
-	Free(send_str);
-
-	// Receive
-	h = RecvHttpHeader(s);
-	if (h == NULL)
-	{
-		return false;
-	}
-
-	// Get the length of the content
-	content_len = GetContentLength(h);
-	FreeHttpHeader(h);
-
-	if (content_len == 0 || content_len >= (1024 * 1024))
-	{
-		return false;
-	}
-
-	// Receive contents
-	recv_buf = NewBuf();
-	socket_buffer = Malloc(socket_buffer_size);
-
-	while (true)
-	{
-		UINT recvsize = MIN(socket_buffer_size, content_len - recv_buf->Size);
-		UINT size;
-
-		if (recvsize == 0)
-		{
-			ok = true;
-			break;
-		}
-
-		size = Recv(s, socket_buffer, recvsize, true);
-		if (size == 0)
-		{
-			// Disconnected
-			break;
-		}
-
-		WriteBuf(recv_buf, socket_buffer, size);
-	}
-
-	SeekBuf(recv_buf, 0, 0);
-	Free(socket_buffer);
-
-	if (ok)
-	{
-		// Examine to confirm whether the incoming data is a SoftEther VPN protocol
-		char tmp[1024];
-
-		Zero(tmp, sizeof(tmp));
-
-		Copy(tmp, recv_buf->Buf, MIN(recv_buf->Size, (sizeof(tmp) - 1)));
-
-		ok = false;
-
-		if (StartWith(tmp, http_detect_server_startwith))
-		{
-			ok = true;
-		}
-		else if (InStr(tmp, http_detect_server_tag_future))
-		{
-			ok = true;
-		}
-	}
-
-	FreeBuf(recv_buf);
-
-	return ok;
 }
 
 // TCP connection thread

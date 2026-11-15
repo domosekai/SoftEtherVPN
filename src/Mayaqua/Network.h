@@ -949,7 +949,6 @@ UINT DetectFletsType();
 
 void ListenTcpForPopupFirewallDialog();
 
-bool DetectIsServerSoftEtherVPN(SOCK *s);
 void ConnectThreadForTcp(THREAD *thread, void *param);
 void ConnectThreadForRUDP(THREAD *thread, void *param);
 void ConnectThreadForOverDnsOrIcmp(THREAD *thread, void *param);
